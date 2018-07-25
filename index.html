@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+<body ng-app="myContact" style="background-color: #D3D3D3;">
+<div ><h2>Logo</h2></div>
+
+<div ng-view></div>
+
+
+<script>
+angular.module('myContact', ['ngRoute'])
+  //routing
+.config(function ($routeProvider){
+  $routeProvider
+    .when('/home', {
+      templateUrl: 'contactListHome.html',
+      controller: 'listCtrl'
+    })
+    
+    .when('/add', {
+      templateUrl: 'contactForm.html',
+      controller: 'addContactCtrl'
+    })
+  
+    .otherwise({redirectTo: '/home'});
+})
+.factory('contactDatabase', [function () {
+  var factory = {};
+  factory.getContacts = function () {
+    return contactList;
+  }
+  factory.setContacts = function (list) {
+	     contactList=list;
+	  }
+  // contact list from database
+  var contactList = [
+   
+	{
+			fname : 'Gopala',
+			lname : 'Krishnan',
+			email : [ {
+				id : "Work",
+				value : 'gopalakrishnan@app.com'
+			}, {
+				id : "Personal",
+				value : 'gopalakrishnan@gmail.com'
+			} ],
+			phone : [ {
+				id : "Work",
+				value : '123-456-7890'
+			}, {
+				id : "Personal",
+				value : '123-456-7890'
+			} ]
+		}, {
+			fname : 'Prakash',
+			lname : 'Kumar',
+			email : [ {
+				id : "Work",
+				value : 'prakashkumar@app.com'
+			}, {
+				id : "Personal",
+				value : 'prakashkumar@gmail.com'
+			}],
+			phone : [ {
+				id : "Work",
+				value : '123-456-7890'
+			}]
+		}, {
+			fname : 'Gopinath',
+			lname : '',
+			email : [ {
+				id : "Work",
+				value : 'gopinath@gmail.com'
+			}],
+			phone : [{
+				id : "Personal",
+				value : '123-456-7890'
+			}, {
+				id : "Work",
+				value : '123-456-7890'
+			}  ]
+		}, {
+			fname : 'Shyam',
+			lname : 'Krishnan',
+			email : [ {
+				id : "Personal",
+				value : 'gopinath@gmail.com'
+			}],
+			phone :[ {
+				id : "Personal",
+				value : '123-456-7890'
+			} ]
+		}
+		];
+		return factory;
+	} ])
+	
+	.controller('listCtrl',
+			[ '$scope' , 'contactDatabase', '$rootScope', function($scope, contactDatabase, $rootScope) {
+				
+				$rootScope.contactList = contactDatabase.getContacts();
+				
+				$scope.contactNav=[];
+					
+				angular.forEach($rootScope.contactList, function(Object, key){
+						var name = Object.fname + Object.lname;
+						name.toLowerCase();
+						 $scope.contactNav.push(name);
+					});
+				
+				
+				
+			} ])
+//directives not required now	
+	.directive("emailDirective", function() {
+    return {
+    	restrict: "E",
+    	template : "<div class=\"form-group\">"+
+    	"<select ng-model=\"mail.id\"><option value=\"work\">Work</option><option value=\"home\">Personal</option></select>"+
+    	"<label>Email</label> <input type=\"email\" ng-model=\"mail.value\" name=\"email\"></div>"
+	
+    	};
+	})
+	.directive("phoneDirective", function() {
+    return {
+    	restrict: "E",
+        template : "<div class=\"form-group\">"+
+		"<select ng-model=\"phn.id\"><option value=\"work\">Work</option><option value=\"home\">Personal</option></select>"+ 
+		"<label>Phone No</label> <input type=\"number\" ng-model=\"phn.value\"></div>"
+    	};
+	})
+		.controller('addContactCtrl',['$scope', 'contactDatabase', '$rootScope', function($scope, contactDatabase, $rootScope) {
+		
+		var n = 4; var count=1;
+		$scope.user={};
+		$scope.user.email=[{}];
+		$scope.user.phone=[{}];
+		
+		$scope.addMailCol= function(id,value) {
+			
+			if(count<n){
+		    	var mail={};
+		    	mail.id= id;
+		    	mail.value=value;
+		    	$scope.user.email.push(mail);
+		    	count=count+1;
+			}
+		};
+		$scope.addPhoneCol= function(id, value) {
+			if(count<n){
+			var phn={};
+		 	phn.id= id;
+		 	phn.value=value;
+	    	$scope.user.phone.push(phn);
+	    	count=count+1;
+			}
+		};
+		
+		$scope.removeCol= function(){
+	
+			var index = $scope.email.length;
+			$scope.email.splice(index,1);
+		}
+		
+		$scope.addContact = function(user) {
+				
+			$rootScope.contactList.push(user);
+			contactDatabase.setContacts($rootScope.contactList);
+		};
+		    
+		
+	}]);
+	
+</script>
+
+</body></html>
